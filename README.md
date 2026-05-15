@@ -2,7 +2,7 @@
 
 An interactive essay about Lotka–Volterra predator–prey dynamics, the alpha-gal syndrome carried by lone star ticks, and what happens to a deer herd when its apex predator can no longer eat it.
 
-**[Live essay →](https://ultimape.github.io/tick-coyote-deer/)**
+**[Live essay →]((https://ultimape.github.io/alpha-gal-ecology/)**
 
 <!-- Optional: add a screenshot. -->
 <!-- ![Preview of the master simulation](preview.png) -->
@@ -51,7 +51,7 @@ Ethical presets (Utilitarian, Ecological, Animal Welfare, Anti-Hunting, Hunter C
 ## Running locally
 
 ```bash
-git clone https://github.com/ultimape/tick-coyote-deer.git
+git clone https://github.com/ultimape/alpha-gal-ecology.git
 cd tick-coyote-deer
 open index.html         # or just double-click
 ```
@@ -76,7 +76,7 @@ python3 build.py     # inlines app.js into template.html → index.html
 1. Push the repo to GitHub.
 2. **Settings → Pages**, set **Source** to **Deploy from a branch**, **Branch** to `main` (root).
 3. Wait ~30 seconds for the deploy.
-4. Live at `https://ultimape.github.io/tick-coyote-deer/`.
+4. Live at `https://ultimape.github.io/alpha-gal-ecology/`.
 
 ## Caveats
 
@@ -92,6 +92,6 @@ The code and essay are released under the [MIT License](LICENSE). Use, modify, f
 
 If you reference this essay academically:
 
-> *The Tick, the Coyote, and the Deer: An Interactive Essay on Predator–Prey Dynamics and Suffering* (2026). https://ultimape.github.io/tick-coyote-deer/
+> *The Tick, the Coyote, and the Deer: An Interactive Essay on Predator–Prey Dynamics and Suffering* (2026). https://ultimape.github.io/alpha-gal-ecology/
 
 For the underlying biology and ecology, see the in-essay footnotes.
