@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Tick, the Coyote, and the Deer — A Predator-Prey Model</title>
+<style>
+  :root {
+    --bg: #fbf7ee;
+    --bg-paper: #fefcf6;
+    --ink: #2a2520;
+    --ink-soft: #6b5f55;
+    --rule: #d8cdba;
+    --rule-soft: #ece2d0;
+    --prey: #2E8B57;
+    --pred: #D55E00;
+    --K: #8B7355;
+    --tick: #E69F00;
+    --suffer: #6A4C93;
+    --starv: #B07A28;
+    --disease: #0072B2;
+    --stress: #6B5F55;
+    --hunt: #56B4E9;
+    --accent-bg: #f4ecdb;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Charter", "Georgia", "Cambria", serif;
+    font-size: 18px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .essay {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 28px 120px;
+  }
+
+  header.title-block {
+    margin-bottom: 80px;
+    text-align: center;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 40px;
+  }
+
+  header.title-block .eyebrow {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+
+  header.title-block h1 {
+    font-size: 44px;
+    line-height: 1.15;
+    font-weight: 600;
+    margin: 0 0 18px 0;
+    letter-spacing: -0.01em;
+  }
+
+  header.title-block .subtitle {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 20px;
+    margin: 0;
+  }
+
+  header.title-block .byline {
+    margin-top: 32px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  section.chapter {
+    margin: 70px 0;
+  }
+
+  section.chapter h2 {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  section.chapter h3 {
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 600;
+    margin: 0 0 28px 0;
+    letter-spacing: -0.005em;
+  }
+
+  p { margin: 0 0 18px 0; }
+  p + p { text-indent: 0; }
+
+  .lede {
+    font-size: 20px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+
+  .lede::first-letter {
+    font-size: 56px;
+    float: left;
+    line-height: 0.9;
+    padding: 6px 8px 0 0;
+    font-weight: 600;
+  }
+
+  .ornament {
+    text-align: center;
+    color: var(--ink-soft);
+    margin: 50px 0;
+    font-size: 14px;
+    letter-spacing: 1em;
+  }
+
+  .math {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: var(--accent-bg);
+    padding: 14px 18px;
+    border-left: 3px solid var(--K);
+    margin: 18px 0;
+    font-size: 15px;
+    line-height: 1.7;
+    border-radius: 2px;
+    overflow-x: auto;
+  }
+
+  .math .var-prey   { color: var(--prey); font-weight: 600; }
+  .math .var-pred   { color: var(--pred); font-weight: 600; }
+  .math .var-K      { color: var(--K); font-weight: 600; }
+  .math .var-suffer { color: var(--suffer); font-weight: 600; }
+  .math .comment    { color: var(--ink-soft); font-style: italic; }
+
+  code.inline {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: var(--accent-bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.88em;
+  }
+
+  /* Cast cards */
+  .cast {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    margin: 30px 0;
+  }
+  .cast-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 20px 14px;
+    text-align: center;
+  }
+  .cast-card .emoji { font-size: 42px; line-height: 1; display: block; margin-bottom: 10px; }
+  .cast-card .name {
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 16px;
+  }
+  .cast-card .role {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .cast-card .swatch {
+    display: inline-block;
+    width: 24px;
+    height: 3px;
+    margin-top: 8px;
+    border-radius: 1px;
+  }
+
+  /* Interactive figure */
+  figure.interactive {
+    margin: 36px 0 36px 0;
+    background: var(--bg-paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 20px 18px 18px;
+    position: relative;
+  }
+
+  figure.interactive .fig-label {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  figure.interactive .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  figure.interactive canvas {
+    width: 100%;
+    height: clamp(240px, 38vh, 380px);
+    display: block;
+    cursor: default;
+  }
+
+  figure.interactive.tall canvas { height: clamp(300px, 48vh, 460px); }
+  figure.interactive.master canvas { height: clamp(340px, 56vh, 540px); }
+
+  /* Figures break out wider than prose on big screens, via negative margins.
+     Container stays narrow (760px) so prose flows naturally; figures expand. */
+  @media (min-width: 1000px) {
+    figure.interactive {
+      margin-left: -120px;
+      margin-right: -120px;
+    }
+  }
+  @media (min-width: 1280px) {
+    figure.interactive {
+      margin-left: -240px;
+      margin-right: -240px;
+    }
+  }
+  @media (min-width: 1440px) {
+    figure.interactive {
+      margin-left: -290px;
+      margin-right: -290px;
+    }
+  }
+
+  .controls {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ctrl-row {
+    display: grid;
+    grid-template-columns: minmax(78px, 102px) 1fr 60px;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+  }
+  .ctrl-row .ctrl-label {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+  /* First line of a two-line label (emoji + symbol) is slightly emphasized */
+  .ctrl-row input[type="range"] {
+    width: 100%;
+    accent-color: var(--K);
+  }
+  .ctrl-row .ctrl-value {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    text-align: right;
+    color: var(--ink-soft);
+  }
+
+  .toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { margin: 0; }
+  .toggle .swatch {
+    display: inline-block;
+    width: 18px;
+    height: 3px;
+    margin-right: 2px;
+  }
+  .toggle .swatch.dashed {
+    background: none !important;
+    border-top: 3px dashed var(--K);
+    width: 18px;
+    height: 0;
+  }
+
+  .preset-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  .preset-row select {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 4px 8px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--ink);
+  }
+
+  .readout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 18px;
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--accent-bg);
+    border-radius: 3px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+  .readout .ro-label { color: var(--ink-soft); }
+  .readout .ro-val { text-align: right; font-weight: 600; color: var(--ink); }
+
+  figcaption {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin-top: 12px;
+    font-style: italic;
+  }
+
+  /* Aside callout */
+  .aside {
+    border-left: 3px solid var(--tick);
+    padding: 4px 0 4px 16px;
+    margin: 24px 0;
+    font-size: 16px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 100px;
+    padding-top: 30px;
+    border-top: 1px solid var(--rule);
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  /* Small details panel for master playground */
+  details.advanced {
+    margin-top: 16px;
+    border-top: 1px solid var(--rule-soft);
+    padding-top: 12px;
+  }
+  details.advanced summary {
+    cursor: pointer;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    user-select: none;
+  }
+  details.advanced[open] summary { margin-bottom: 14px; }
+
+  /* Footnotes */
+  sup.fnref {
+    font-size: 0.7em;
+    line-height: 0;
+    margin-left: 1px;
+  }
+  sup.fnref a {
+    text-decoration: none;
+    color: var(--K);
+    font-weight: 600;
+  }
+  sup.fnref a:hover { color: var(--prey); }
+  .footnotes {
+    border-top: 1px solid var(--rule);
+    margin: 60px 0 40px;
+    padding-top: 24px;
+    font-size: 0.92em;
+    color: var(--ink-soft);
+  }
+  .footnotes h3 {
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    margin-bottom: 18px;
+    font-style: normal;
+    color: var(--ink-soft);
+  }
+  .footnotes ol { padding-left: 24px; margin: 0; }
+  .footnotes li {
+    margin-bottom: 14px;
+    line-height: 1.55;
+  }
+  .footnotes li a { color: var(--prey); word-break: break-all; }
+  .footnotes li .backref {
+    margin-left: 6px;
+    text-decoration: none;
+    color: var(--ink-soft);
+  }
+  .footnotes li .backref:hover { color: var(--prey); }
+
+  /* Responsive — phone landscape & smaller tablets */
+  @media (max-width: 820px) {
+    .essay { padding: 50px 24px 100px; }
+  }
+
+  /* Phone portrait */
+  @media (max-width: 600px) {
+    body { font-size: 17px; }
+    .essay { padding: 28px 14px 80px; }
+    header.title-block { margin-bottom: 50px; padding-bottom: 30px; }
+    header.title-block h1 { font-size: 30px; }
+    header.title-block .subtitle { font-size: 17px; }
+    section.chapter { margin: 50px 0; }
+    section.chapter h3 { font-size: 23px; }
+    .lede::first-letter { font-size: 56px; }
+    figure.interactive { padding: 14px 10px 12px; margin: 28px 0; }
+    figure.interactive .fig-label { font-size: 10px; }
+    .ctrl-row {
+      grid-template-columns: minmax(60px, 90px) 1fr 48px;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .ctrl-row .ctrl-label { font-size: 12px; }
+    .ctrl-row .ctrl-value { font-size: 12px; }
+    .toggles { gap: 6px 12px; font-size: 13px; }
+    .readout { grid-template-columns: 1fr; gap: 6px; }
+    .cast { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .math { font-size: 13px; padding: 12px; overflow-x: auto; }
+    .preset-row { flex-direction: column; align-items: stretch; gap: 8px; }
+    .preset-row select { width: 100%; }
+  }
+
+  /* Very small phones */
+  @media (max-width: 380px) {
+    .essay { padding: 24px 10px 70px; }
+    header.title-block h1 { font-size: 26px; }
+    figure.interactive { padding: 10px 6px 10px; }
+    .cast { grid-template-columns: 1fr; }
+    .ctrl-row { grid-template-columns: 52px 1fr 44px; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="essay">
+
+<header class="title-block">
+  <div class="eyebrow">An Interactive Essay</div>
+  <h1>The Tick, the Coyote, and the Deer</h1>
+  <p class="subtitle">A thought experiment about what happens when an allergy jumps the species barrier.</p>
+  <div class="byline">Lotka-Volterra · alpha-gal · suffering</div>
+</header>
+
+<section class="chapter" id="intro">
+  <p class="lede">In the woods of New England, a small tick is rewriting an old ecological story. When the lone star tick bites a person, it can leave behind an allergy to mammalian meat — a condition called <em>alpha-gal syndrome</em>. The mechanism is strange and specific: a sugar found in non-primate mammal tissue, transferred through tick saliva, that the immune system learns to attack. A person who develops it can no longer safely eat venison, pork, or beef.</p>
+  <p>Here is the thought experiment this essay rests on. <em>What if alpha-gal — or something like it — could jump the species barrier into the wild carnivores that hunt deer?</em> Coyotes, bobcats, fishers, and bears are all parasitized by the same lone star ticks that are now spreading north into New England.<sup class="fnref"><a href="#fn1" id="fnref1">1</a></sup> The conventional answer is that these species produce alpha-gal themselves and so are tolerant to it: tick bites can&rsquo;t induce an allergy to a molecule the immune system already counts as self. That answer is the textbook story, but it isn&rsquo;t airtight — we&rsquo;ll come back to why in the closing section. For now, imagine that a tolerance-breaking variant emerges. A coyote bitten by enough ticks loses the ability to digest deer. The deer survives the encounter. The coyote starves.</p>
+  <p>You might expect this to be good news for the deer. This essay is about why it usually isn&rsquo;t — and how to think clearly about the difference between &ldquo;fewer animals dying violently&rdquo; and &ldquo;less animal suffering.&rdquo;</p>
+  <p>To get there we&rsquo;ll build up a small mathematical model in pieces. Each section adds one idea. You can pull the sliders and the math will pull right along with you. At the end there&rsquo;s a master simulation that puts the whole picture on one chart, and lets you set your own ethical weights to ask: did removing the predator help, or did it just move the suffering somewhere harder to see?</p>
+</section>
+
+<div class="ornament">§</div>
+
+<section class="chapter" id="cast">
+  <h2>I · The Cast</h2>
+  <h3>Six things to keep track of.</h3>
+  <p>Every chart in this essay uses the same color for the same idea. The actors:</p>
+  <div class="cast">
+    <div class="cast-card">
+      <span class="emoji">🦌</span>
+      <div class="name">Prey</div>
+      <div class="role">Deer. The population we&rsquo;re tracking, usually called <em>x</em>.</div>
+      <span class="swatch" style="background:var(--prey)"></span>
+    </div>
+    <div class="cast-card">
+      <span class="emoji">🐺</span>
+      <div class="name">Predator</div>
+      <div class="role">Coyotes, bobcats, fishers — anything that eats deer, called <em>y</em>.</div>
+      <span class="swatch" style="background:var(--pred)"></span>
+    </div>
+    <div class="cast-card">
+      <span class="emoji">🌿</span>
+      <div class="name">Carrying capacity</div>
+      <div class="role">How many deer the land can feed, called <em>K</em>.</div>
+      <span class="swatch" style="background:var(--K); border-top: 3px dashed var(--K); background: none; height:0; margin-top:14px;"></span>
+    </div>
+    <div class="cast-card">
+      <span class="emoji">🦠</span>
+      <div class="name">The tick</div>
+      <div class="role">A bloom centered on time <em>T</em>. Sensitizes predators to alpha-gal — their hunting effectiveness fades.</div>
+      <span class="swatch" style="background:var(--tick)"></span>
+    </div>
+    <div class="cast-card">
+      <span class="emoji">🏹</span>
+      <div class="name">Hunting</div>
+      <div class="role">Human harvest at rate <em>h</em>. A clean, fast death — for comparison.</div>
+      <span class="swatch" style="background:var(--hunt)"></span>
+    </div>
+    <div class="cast-card">
+      <span class="emoji">💀</span>
+      <div class="name">Suffering</div>
+      <div class="role">The thing we ultimately care about, called <em>S(t)</em>.</div>
+      <span class="swatch" style="background:var(--suffer)"></span>
+    </div>
+  </div>
+</section>
+
+<div class="ornament">§</div>
+
+<section class="chapter" id="exponential">
+  <h2>II · Prey alone, unchecked</h2>
+  <h3>Why no animal grows forever.</h3>
+  <p>Start with a single deer population and nothing to stop it. The simplest model says: more deer make more deer, so the rate of change is proportional to how many you already have.</p>
+  <div class="math">
+    d<span class="var-prey">x</span>/dt = α · <span class="var-prey">x</span>
+  </div>
+  <p>That little equation says &ldquo;the speed at which <span style="color:var(--prey); font-weight:600;">🦌 deer</span> appear is some growth rate α times the current number of deer.&rdquo; Pull the slider for α below. Higher growth rate, faster the curve climbs.</p>
+  <figure class="interactive" id="fig-exp">
+    <div class="fig-label">Figure 1 · Pure exponential growth</div>
+    <div class="chart-wrap"><canvas data-chart="exp"></canvas></div>
+    <div class="controls" data-controls="exp"></div>
+    <figcaption>Exponential growth has no ceiling. Real populations don&rsquo;t look like this for long because real environments push back.</figcaption>
+  </figure>
+</section>
+
+<section class="chapter" id="logistic">
+  <h2>III · The land pushes back</h2>
+  <h3>Adding a carrying capacity.</h3>
+  <p>Deer eat plants. Plants are finite. When deer density gets high, food runs short, fawns starve, fewer fawns are born. The cleanest way to add this to our model is the <em>logistic</em> term — a brake that gets stronger as the population approaches a ceiling <span style="color:var(--K); font-weight:600;">🌿 K</span>.</p>
+  <div class="math">
+    d<span class="var-prey">x</span>/dt = α · <span class="var-prey">x</span> · (1 − <span class="var-prey">x</span> / <span class="var-K">K</span>)
+  </div>
+  <p>Now the curve S-shapes its way to a stable level. Try lowering <span style="color:var(--K); font-weight:600;">K</span> and watch the ceiling drop with it.</p>
+  <figure class="interactive" id="fig-log">
+    <div class="fig-label">Figure 2 · Logistic growth</div>
+    <div class="chart-wrap"><canvas data-chart="log"></canvas></div>
+    <div class="controls" data-controls="log"></div>
+    <figcaption>The population can&rsquo;t exceed what the land can feed. <span style="color:var(--K)">K</span> is the equilibrium — neither famine nor abundance.</figcaption>
+  </figure>
+</section>
+
+<section class="chapter" id="lv">
+  <h2>IV · Enter the predator</h2>
+  <h3>Two species, one rhythm.</h3>
+  <p>Now add the predators that hunt deer. They eat well when deer are plentiful, and starve when deer are scarce. The classical way to write this, due to Lotka and Volterra in the 1920s, looks like this:</p>
+  <div class="math">
+    d<span class="var-prey">x</span>/dt = α · <span class="var-prey">x</span> − β · <span class="var-prey">x</span> · <span class="var-pred">y</span> &nbsp;&nbsp;<span class="comment"># prey</span><br>
+    d<span class="var-pred">y</span>/dt = δ · <span class="var-prey">x</span> · <span class="var-pred">y</span> − γ · <span class="var-pred">y</span> &nbsp;&nbsp;<span class="comment"># predators</span>
+  </div>
+  <p>The four Greek letters do simple work. <em>α</em> is how fast deer reproduce. <em>β</em> is how good the predators are at catching deer. <em>δ</em> is how much of each deer becomes more predator (calories converted to new coyote pups, new bobcat kits, surviving another winter). <em>γ</em> is how fast predators die off when deer get scarce.</p>
+  <p>Notice we&rsquo;ve quietly dropped the <span style="color:var(--K); font-weight:600;">🌿 K</span> term from the prey equation for now. The classical Lotka-Volterra model assumes predation alone keeps deer in check — the land&rsquo;s ceiling never comes into play. The result is the perfect oscillation that has fascinated ecologists for a century: predators rise, prey falls, predators starve, prey recovers, repeat. Forever. Try the sliders.</p>
+  <figure class="interactive tall" id="fig-lv">
+    <div class="fig-label">Figure 3 · Classical Lotka–Volterra cycles</div>
+    <div class="chart-wrap"><canvas data-chart="lv"></canvas></div>
+    <div class="controls" data-controls="lv"></div>
+    <div class="toggles" data-toggles="lv"></div>
+    <figcaption>Neither species wins. The two populations are locked into a dance, and the system stays stable indefinitely — provided the predator is there.</figcaption>
+  </figure>
+</section>
+
+<div class="ornament">§</div>
+
+<section class="chapter" id="tick">
+  <h2>V · The tick arrives</h2>
+  <h3>A small bite, a big consequence.</h3>
+  <p>Here is where the model gets interesting. As the tick bloom rolls through, a critical mass of coyotes, bobcats, and fishers acquire the alpha-gal sensitization from accumulated bites. The biology isn&rsquo;t instant — alpha-gal disables the predator&rsquo;s ability to digest its main prey, but doesn&rsquo;t kill it directly. So we track a third quantity, <em>E(t)</em>, the predator effectiveness:</p>
+  <div class="math">
+    d<span class="var-pred">E</span>/dt = − μ · <span style="color:var(--tick)">z(t)</span> · <span class="var-pred">E</span> &nbsp;&nbsp;<span class="comment"># sensitization is permanent</span><br>
+    d<span class="var-pred">y</span>/dt = δ · <span class="var-pred">E</span> · <span class="var-prey">x</span> · <span class="var-pred">y</span> − γ · <span class="var-pred">y</span>
+  </div>
+  <p>Read the first line as: the bloom <em>z(t)</em> eats away at the predator&rsquo;s usable hunting capacity, and once gone it doesn&rsquo;t come back. The second line is the predator equation from before — except predation rate now scales with <em>E</em>. Once <em>E</em> approaches zero, the predator can&rsquo;t feed effectively and slowly starves out via background mortality γ. No instant disappearance — a gradual collapse over a few years.</p>
+  <p>The bloom also hurts the deer directly. Real lone star tick infestations cause anemia, secondary infections, and stress in deer too — so the model includes a temporary toll <em>−τ·z(t)·x</em> on the prey while the bloom is at its peak.<sup class="fnref"><a href="#fn3" id="fnref3">3</a></sup> The deer dip but recover; the predators fade and don&rsquo;t. In this section, assume nothing else changes — no density-dependent disease yet. Deer eventually drift up toward <span style="color:var(--K); font-weight:600;">K</span> and settle.</p>
+  <p>Drag the orange 🦠 marker along the time axis to slide the bloom around, or widen the bloom to make the irruption more drawn-out.</p>
+  <figure class="interactive tall" id="fig-tick">
+    <div class="fig-label">Figure 4 · Tick event, no density-dependent disease yet</div>
+    <div class="chart-wrap"><canvas data-chart="tick"></canvas></div>
+    <div class="controls" data-controls="tick"></div>
+    <div class="toggles" data-toggles="tick"></div>
+    <figcaption>The predators fade, the deer dip during the bloom and then climb. This is the still-optimistic story — no density-dependent disease yet. Real populations released from predation almost never glide peacefully to equilibrium.</figcaption>
+  </figure>
+  <p class="aside">If this were the whole story, alpha-gal would be a gift to the deer. It isn&rsquo;t. The next section is why.</p>
+</section>
+
+<section class="chapter" id="crash">
+  <h2>VI · The pressure that doesn&rsquo;t go away</h2>
+  <h3>Chronic disease, chronic starvation.</h3>
+  <p>Two things missing from the naive picture. First, the carrying capacity <span style="color:var(--K)">K</span> in the logistic equation describes <em>space</em> — how many deer fit — but a healthier carrying capacity, call it <span style="color:var(--K)">K<sub>safe</sub></span>, is much lower. Above it, animals get crowded enough that disease spreads and parasites flourish.</p>
+  <p>Second, the mortality from crowding is sharply nonlinear. A herd at twice its healthy density doesn&rsquo;t have twice the disease — it has many times more, because contact rates rise faster than population.</p>
+  <div class="math">
+    d<span class="var-prey">x</span>/dt = α · <span class="var-prey">x</span> · (1 − <span class="var-prey">x</span>/<span class="var-K">K</span>) − [ <span style="color:var(--starv)">starv(x)</span> + <span style="color:var(--disease)">disease(x)</span> ] · <span class="var-prey">x</span>
+  </div>
+  <p>Where the new mortality terms kick in nonlinearly when the herd is over its healthy density:</p>
+  <div class="math">
+    <span style="color:var(--starv)">starv(x)</span>    = s · max(0, <span class="var-prey">x</span>/<span class="var-K">K<sub>safe</sub></span> − 1)<sup>2</sup><br>
+    <span style="color:var(--disease)">disease(x)</span>  = d · (<span class="var-prey">x</span>/<span class="var-K">K<sub>safe</sub></span>)<sup>n</sup>&nbsp;&nbsp;<span class="comment"># n ≈ 4, sharply density-dependent</span>
+  </div>
+  <p>The result, in the model, is not a brief catastrophe but a slow one. The herd grows past <span style="color:var(--K)">K<sub>safe</sub></span> and settles at a new, higher level — one where disease and starvation are now constant pressures, not occasional events. Total mortality is comparable to before. Its character is not. Move the orange marker and watch the disease and starvation lines stay elevated forever after.</p>
+  <p>(In real ecosystems, this elevated equilibrium often <em>does</em> punctuate with crashes — overwintering die-offs, disease outbreaks, density-dependent waves. A toy model with two state variables can&rsquo;t capture those delays. The story it can tell, and tells clearly, is the one above: removing a predator doesn&rsquo;t remove the pressure on its prey.)</p>
+  <figure class="interactive tall" id="fig-crash">
+    <div class="fig-label">Figure 5 · Realistic post-T dynamics</div>
+    <div class="chart-wrap"><canvas data-chart="crash"></canvas></div>
+    <div class="controls" data-controls="crash"></div>
+    <div class="toggles" data-toggles="crash"></div>
+    <figcaption>The herd settles into a new, elevated equilibrium. Predation is gone; disease and starvation take its place — and they don&rsquo;t leave.</figcaption>
+  </figure>
+</section>
+
+<div class="ornament">§</div>
+
+<section class="chapter" id="suffering">
+  <h2>VII · Measuring suffering</h2>
+  <h3>What counts as a bad death?</h3>
+  <p>So far we&rsquo;ve been counting animals. But we usually care about animals because we care about <em>what they experience</em>. A deer killed in under a second by a hunter&rsquo;s clean rifle shot has had a different end than a deer chased through deep snow by coyotes and slowly torn apart, or one that spent its last winter coughing up parasites. The math doesn&rsquo;t make these distinctions for us — we have to put them in by hand.</p>
+  <p>One way is a weighted suffering metric. The components are different <em>kinds</em> of dying; the weights are what each kind costs:</p>
+  <div class="math">
+    <span class="var-suffer">S(t)</span> = w₁·<span style="color:var(--pred)">Predation</span> + w₂·<span style="color:var(--starv)">Starvation</span> + w₃·<span style="color:var(--disease)">Disease</span> + w₄·<span style="color:var(--stress)">Stress</span> + w₅·<span style="color:var(--hunt)">Hunting</span>
+  </div>
+  <p>Each component is something the model can compute from the populations. The weights <em>w</em> are where ethics enters. <em>w₁</em> rates a wolf attack, <em>w₅</em> rates a clean rifle shot — the same dead deer, very different last minutes. Different preset combinations encode different worldviews. The "Hunter Compensation" preset, for example, says hunting deaths are much less bad than predation deaths and asks whether ramping hunting up after the predator collapse can keep total suffering down.</p>
+  <p>The readout under the chart shows mean suffering <em>per year</em> in each era — not an integral, since the integral grows arbitrarily with how long you run the simulation. The per-year rate is the honest comparison: was a typical year before the tick better or worse than a typical year after it settled?</p>
+  <figure class="interactive tall" id="fig-suffer">
+    <div class="fig-label">Figure 6 · Suffering under different ethical weights</div>
+    <div class="chart-wrap"><canvas data-chart="suffer"></canvas></div>
+    <div class="controls" data-controls="suffer"></div>
+    <div class="toggles" data-toggles="suffer"></div>
+    <div class="readout" data-readout="suffer"></div>
+    <figcaption>Under almost any reasonable weighting, post-tick suffering rivals or exceeds pre-tick suffering. The fast deaths of predation get replaced by slow deaths from disease — same total animals, very different experience.</figcaption>
+  </figure>
+</section>
+
+<div class="ornament">§</div>
+
+<section class="chapter" id="playground">
+  <h2>VIII · The playground</h2>
+  <h3>All of it, at once.</h3>
+  <p>Here&rsquo;s every line and every dial in one place. Drag the 🦠 marker to move the tick event. Toggle any line on or off. Pick an ethical preset or build your own. The readout shows mean suffering rates per year — independent of how long you let the simulation run.</p>
+  <p>Three sliders appear here for the first time. <em>🦠🐺 alpha-gal μ</em> sets how thoroughly the bloom destroys predator hunting effectiveness — at zero the predators carry on unaffected. <em>🦠🦌 deer toll τ</em> controls how badly the bloom hurts deer directly through tick parasitism. <em>🏹 hunting rate h</em> introduces human harvest as a clean, fast alternative to predation; the suffering weight <em>w₅</em> sets how bad you think a hunter&rsquo;s shot is compared to a coyote&rsquo;s teeth.</p>
+  <p>The question this essay was built to ask: <em>can you find a setting where removing the predator reduces total suffering per year?</em> Try.</p>
+  <figure class="interactive master" id="fig-master">
+    <div class="fig-label">Figure 7 · Full model — drag 🦠 on the chart</div>
+    <div class="chart-wrap"><canvas data-chart="master"></canvas></div>
+    <div class="toggles" data-toggles="master"></div>
+    <div class="preset-row" data-preset="master"></div>
+    <div class="controls" data-controls="master"></div>
+    <div class="readout" data-readout="master"></div>
+    <details class="advanced" open>
+      <summary>Model parameters</summary>
+      <div class="controls" data-controls="master-adv"></div>
+    </details>
+    <figcaption>Move the orange tick marker by dragging it along the top of the chart. Everything updates instantly.</figcaption>
+  </figure>
+</section>
+
+<div class="ornament">§</div>
+
+<section class="chapter" id="closing">
+  <h2>IX · A note on what this is and isn&rsquo;t</h2>
+  <p>This is a toy model, and the scenario it depicts is speculative. But the standard reason to dismiss it outright — that non-primate mammals produce alpha-gal as a self-molecule and so can&rsquo;t be sensitized to it — is shakier than it first appears.</p>
+  <p>It&rsquo;s mostly right: tolerance to self does mean that, in the typical case, tick bites can&rsquo;t induce an allergy to a molecule the immune system already counts as its own. But that tolerance isn&rsquo;t indestructible. The same tick saliva that sensitizes humans is loaded with immunomodulators, and there&rsquo;s now evidence in dogs — published in 2019 — that tick bites do induce anti-alpha-gal antibodies in animals that should, in theory, be tolerant.<sup class="fnref"><a href="#fn2" id="fnref2">2</a></sup> Whether that breakthrough antibody response is enough to cause a functional meat allergy in a wild canid is unknown. It&rsquo;s also genuinely possible that breaking tolerance to a self-molecule is <em>worse</em> than developing a foreign-antigen allergy — that&rsquo;s the territory of autoimmune disease, not just food intolerance. The thought experiment in this essay doesn&rsquo;t depend on which version is right. It only needs the predator to vanish, by some plausible mechanism.</p>
+  <p>And the model itself is a stand-in for any pressure that takes an apex predator out of a system: a novel pathogen, a habitat collapse, a hunting policy change, a sudden behavioral shift. The math doesn&rsquo;t care about the cause; it cares about the absence.</p>
+  <p>Real ecosystems also have more than two species, more than one limiting resource, weather, geography, and the unpredictable. Real predator collapses don&rsquo;t happen all at once. Deer aren&rsquo;t the only thing that fluctuates.</p>
+  <p>But toy models do something the full picture can&rsquo;t: they let you see the shape of an argument clearly. The shape here is that <strong>removing a predator does not remove the pressure on its prey. It just changes how that pressure gets paid.</strong> The currency shifts from fast deaths to slow ones, from predation to disease, from an autumn ambush to a winter&rsquo;s thaw.</p>
+  <p>Whether that&rsquo;s better or worse depends on weights you assign — and the model lets you assign them honestly, with the math fully visible.</p>
+</section>
+
+<section class="footnotes" id="notes">
+  <h3>Notes</h3>
+  <ol>
+    <li id="fn1">
+      Range expansion of <em>Amblyomma americanum</em> into the northeastern United States is documented in Molaei et al., <em>“Bracing for the Worst — Range Expansion of the Lone Star Tick in the Northeastern United States,”</em> <em>New England Journal of Medicine</em> 381 (2019): 2189–2192. <a href="https://www.nejm.org/doi/full/10.1056/NEJMp1911661" target="_blank" rel="noopener">nejm.org/doi/full/10.1056/NEJMp1911661</a><a href="#fnref1" class="backref" aria-label="back to text">↩</a>
+    </li>
+    <li id="fn2">
+      Hodžić, Mateos-Hernández, Leschnik, Alberdi, Rego, Contreras, Villar, de la Fuente, Cabezas-Cruz, &amp; Duscher, <em>“Tick Bites Induce Anti-α-Gal Antibodies in Dogs,”</em> <em>Vaccines</em> 7, no. 3 (2019): 114. The authors detected anti–α-Gal IgG, IgM, and IgE in clinically healthy dogs and demonstrated antibody induction following experimental tick infestation, despite dogs producing α-Gal as a normal self-antigen. They explicitly raise the possibility that tick salivary antigens can break peripheral tolerance and open the question of whether dogs could develop allergy to mammalian meat. doi: 10.3390/vaccines7030114. <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6789585/" target="_blank" rel="noopener">ncbi.nlm.nih.gov/pmc/articles/PMC6789585</a><a href="#fnref2" class="backref" aria-label="back to text">↩</a>
+    </li>
+    <li id="fn3">
+      For an accessible overview of the ecological drivers behind tick blooms, see <em>“Lone Star Tick: Why Land Management (Not Just Climate Change) Is Driving Boom,”</em> Entomology Today (Mar. 2022). <a href="https://entomologytoday.org/2022/03/01/lone-star-tick-land-management-deer-climate-change/" target="_blank" rel="noopener">entomologytoday.org/2022/03/01/lone-star-tick-land-management-deer-climate-change</a>. The classic mast-mouse-tick chain in the closely related blacklegged tick system was established by Ostfeld and colleagues in a long line of work beginning in the 1990s; lone star tick dynamics differ in detail but share the general principle that host abundance and habitat structure drive local population peaks. The direct effects of heavy tick parasitism on large cervids — anemia, hide damage, reduced winter fitness, secondary infection — are best documented in the moose-decline literature of northern New England, which is methodologically the closest published analogue for what the model treats with the τ·z(t)·x term.<a href="#fnref3" class="backref" aria-label="back to text">↩</a>
+    </li>
+  </ol>
+</section>
+
+<footer>
+  <p>An interactive essay. No external libraries, no tracking, no CDNs. Save this page; it works offline.</p>
+</footer>
+
+</div><!-- /essay -->
+
+<script>
+/* JAVASCRIPT_GOES_HERE */
+</script>
+</body>
+</html>
