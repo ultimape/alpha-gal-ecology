@@ -2,7 +2,7 @@
 
 An interactive essay about Lotka–Volterra predator–prey dynamics, the alpha-gal syndrome carried by lone star ticks, and what happens to a deer herd when its apex predator can no longer eat it.
 
-**[Live essay →]((https://ultimape.github.io/alpha-gal-ecology/)**
+**[Live essay →](https://ultimape.github.io/alpha-gal-ecology/)**
 
 <!-- Optional: add a screenshot. -->
 <!-- ![Preview of the master simulation](preview.png) -->
