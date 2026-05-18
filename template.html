@@ -425,6 +425,32 @@
   }
   .footnotes li .backref:hover { color: var(--prey); }
 
+  /* Postscript — collapsible "for the curious" block at the essay's end */
+  details.postscript {
+    margin: 36px 0 8px;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+    padding-top: 22px;
+  }
+  details.postscript summary {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    color: var(--pred);
+    cursor: pointer;
+    font-style: normal;
+    list-style: none;
+  }
+  details.postscript summary::-webkit-details-marker { display: none; }
+  details.postscript summary::before {
+    content: "▸ ";
+    color: var(--pred);
+  }
+  details.postscript[open] summary::before { content: "▾ "; }
+  details.postscript[open] summary { margin-bottom: 14px; }
+  details.postscript p { margin: 0 0 14px; }
+  details.postscript p:last-child { margin-bottom: 0; }
+
   /* Responsive — phone landscape & smaller tablets */
   @media (max-width: 820px) {
     .essay { padding: 50px 24px 100px; }
@@ -685,6 +711,15 @@
   <p>Real ecosystems also have more than two species, more than one limiting resource, weather, geography, and the unpredictable. Real predator collapses don&rsquo;t happen all at once. Deer aren&rsquo;t the only thing that fluctuates.</p>
   <p>But toy models do something the full picture can&rsquo;t: they let you see the shape of an argument clearly. The shape here is that <strong>removing a predator does not remove the pressure on its prey. It just changes how that pressure gets paid.</strong> The currency shifts from fast deaths to slow ones, from predation to disease, from an autumn ambush to a winter&rsquo;s thaw.</p>
   <p>Whether that&rsquo;s better or worse depends on weights you assign — and the model lets you assign them honestly, with the math fully visible.</p>
+
+  <details class="postscript">
+    <summary>For the curious: can removing the predator actually win?</summary>
+    <p>The playground asks whether you can find a setting where losing the predator <em>lowers</em> suffering per year. You can — and tracing why is more revealing than the answer.</p>
+    <p>Sweep the parameters under each ethical preset and four of the five can be pushed below a 1.0 after/before ratio. The exception is <em>Ecological</em>, which rates predation as natural and barely costly (w₁ = 0.3) while weighting disease and starvation heavily; for that worldview, removing the predator only ever makes things slightly worse, no matter how you tune the other dials.</p>
+    <p>The reason the others succeed is worth sitting with. Take <em>Anti-Hunting</em> weights, which treat a predation death as the worst kind (w₁ = 2.5). Before the tick, predation contributes the lion&rsquo;s share of suffering — coyotes running deer down. After the tick, predation is zero, replaced by density-dependent disease and starvation. Roughly the same number of deer die either way. What changes is the <em>label</em> on each death, and this worldview considers a slow sick death much less bad than a violent fast one. Swap the labels and the weighted total falls. The win is real, but it was baked into the weights from the start.</p>
+    <p>The honest test is <em>Utilitarian</em> — every weight equal to 1, no thumb on the scale. Even there you can nudge the ratio just under 1.0, but only by stacking conditions: a late tick event, heavy compensating hunting, a high deer-toll τ that makes the pre-tick era worse to begin with. It is a fragile, marginal win. With neutral weights and ordinary parameters, removing the predator roughly breaks even or loses.</p>
+    <p>So the model doesn&rsquo;t settle the question. It shows that the question is an <em>ethical</em> one wearing a quantitative disguise. If you believe a fast violent death is far worse than a slow sick one, predator loss can look like mercy. If you believe the reverse, it looks like a mistake. The differential equations are identical in both cases. The conclusion turns entirely on the numbers you, the reader, decided to put in.</p>
+  </details>
 </section>
 
 <section class="footnotes" id="notes">
