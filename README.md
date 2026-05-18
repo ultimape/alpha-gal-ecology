@@ -52,7 +52,7 @@ Ethical presets (Utilitarian, Ecological, Animal Welfare, Anti-Hunting, Hunter C
 
 ```bash
 git clone https://github.com/ultimape/alpha-gal-ecology.git
-cd tick-coyote-deer
+cd alpha-gal-ecology
 open index.html         # or just double-click
 ```
 
@@ -86,7 +86,7 @@ Real ecosystems also have more than two species, more than one limiting resource
 
 ## License
 
-The code and essay are released under the [MIT License](LICENSE). Use, modify, fork, and republish freely.
+The code and essay are released under [CC0 1.0](LICENSE) — a public domain dedication. Use, modify, fork, and republish freely, with or without attribution. Tho it'd be nice if you mention me (@ultimape).
 
 ## Citation
 
