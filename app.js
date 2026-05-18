@@ -48,6 +48,10 @@
     // Bloom-driven mechanisms: predator alpha-gal severity, deer direct toll
     const muMax    = p.muMax    != null ? p.muMax    : 2.0;
     const tauMax   = p.tauMax   != null ? p.tauMax   : 0.8;
+    // logisticMode: 'always' — ceiling applies at all times (§III, no predators)
+    //               'gated'  — ceiling fades in as predators lose effectiveness
+    //                          (§V–VIII: pre-bloom, predation bounds prey instead)
+    const logisticMode = p.logisticMode || 'always';
     // Hunting
     const huntRate     = p.huntRate     != null ? p.huntRate     : 0;
     const huntPreT     = p.huntPreT !== false;
@@ -71,12 +75,18 @@
     }
 
     // Unified derivs. Predator effectiveness E decays during the bloom and
-    // never recovers (alpha-gal sensitization is permanent). Disease/starv
-    // and logistic damping ramp in as effectiveness falls — gated by (1−E).
+    // never recovers (alpha-gal sensitization is permanent). The logistic
+    // ceiling is either always on (§III) or fades in as predators lose
+    // effectiveness (§V–VIII). Density-dependent disease/starvation always
+    // ramp in with the phase gate.
     function derivs(t, xv, yv, ev) {
       const z = tickZ(t);
       const phase = 1 - ev;  // 0 pre-bloom (E≈1), 1 post-bloom (E≈0)
-      const preyLogistic = useLogistic ? (1 - phase * xv / K) : 1;
+      let preyLogistic = 1;
+      if (useLogistic) {
+        const gate = (logisticMode === 'gated') ? phase : 1;
+        preyLogistic = 1 - gate * xv / K;
+      }
       const overK = Math.max(0, xv / Ksafe - 1);
       const sTerm = dStarv * overK * overK * phase;
       const dTerm = dDisease * Math.pow(xv / Ksafe, nDisease) * phase;
@@ -630,7 +640,7 @@
         x0: 400, y0: 100,
         T: T, tickPeak: 1, tickWidth: tickWidth,
         tMax: 70, dt: 0.05,
-        useLogistic: true  // logistic ceiling activates via (1−E) gating
+        useLogistic: true, logisticMode: 'gated'
       });
       const tickScale = chart.opts.yRange[1] * 0.25;
       const preyData = sim.t.map(function(t, i) { return { x: t, y: sim.x[i] }; });
@@ -693,7 +703,7 @@
         x0: 400, y0: 100,
         T: T, tickWidth: tickWidth,
         tMax: 70, dt: 0.05,
-        useLogistic: true  // logistic ceiling activates via (1−E) gating
+        useLogistic: true, logisticMode: 'gated'
       });
       const tickScale = chart.opts.yRange[1] * 0.2;
       const preyData = sim.t.map(function(t, i) { return { x: t, y: sim.x[i] }; });
@@ -800,7 +810,7 @@
         dStarv: 0.5, dDisease: 0.08, nDisease: 4,
         x0: 400, y0: 100,
         T: T, tMax: 70, dt: 0.05,
-        useLogistic: true  // logistic ceiling activates via (1−E) gating
+        useLogistic: true, logisticMode: 'gated'
       });
       const S = suffering(sim, { w1: w[0], w2: w[1], w3: w[2], w4: w[3], w5: w[4] });
       const SData = sim.t.map(function(t, i) { return { x: t, y: S[i] }; });
@@ -976,7 +986,7 @@
         muMax: p.muMax, tauMax: p.tauMax,
         huntRate: p.huntRate, huntPreT: p.huntPreT, huntPostT: p.huntPostT,
         tMax: 100, dt: 0.05,
-        useLogistic: true  // logistic ceiling activates via (1−E) gating
+        useLogistic: true, logisticMode: 'gated'
       });
       const S = suffering(sim, { w1: w[0], w2: w[1], w3: w[2], w4: w[3], w5: w[4] });
       const tickScale = chart.opts.yRange[1] * 0.2;
